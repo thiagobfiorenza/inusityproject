@@ -1,0 +1,1 @@
+O Inusity Project é um projeto inovador que faz com que o público participe ativamente do show que está assistindo através da escolha das músicas do repertório do artista. O artista que utiliza o Inusity Project se propõe a tocar todas as músicas mais votadas, deixando de lado seu gosto pessoal e focando no gosto do público. Não é o máximo?
