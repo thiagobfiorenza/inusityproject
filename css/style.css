@@ -427,8 +427,6 @@ ul, li {
 		font-size: 12px;
 		clear: both;
 	}
-	#Portfolio .block-heading .block-heading-info .contador.number {
-	}
 	#Portfolio .each-portfolio .hover-cont-wrap .vote a.nao {
 		right: 34px;
 	}
@@ -482,7 +480,7 @@ ul, li {
 		padding-left: 10px;
 	}
 	#Portfolio .block-heading .block-heading-info .btn-vote {
-		margin-top: 12px;
+		margin-top: 5px;
 		width: 100%;
 	}
 }

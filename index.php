@@ -92,31 +92,31 @@
         <!-- About Us section ends here -->
 <?php
 include 'conn.php';
-$rs = mysql_query("
-    SELECT s.id, s.date, p.name place, p.address, p.maps FROM shows s
+$rs = mysqli_query($conn, "
+    SELECT s.id, s.date, s.is_countdown, s.start_countdown, p.name place, p.address, p.maps FROM shows s
     INNER JOIN places p ON p.id = s.place_id
     WHERE is_next = 'Y' AND s.is_deleted = 'N' ORDER BY date ASC LIMIT 1
 ");
 
-$row = mysql_fetch_object($rs);
+$row = mysqli_fetch_object($rs);
 $showId = $row->id;
 
 $userIp = !empty($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'local';
 
 $arrVotes = array();
-$rs = mysql_query("
+$rs = mysqli_query($conn,"
     SELECT show_songs.song_id
     FROM show_songs
     WHERE show_songs.show_id = " . $showId .  " AND user_ip = '" . $userIp . "'
 ");
 
-while($rowVotes = mysql_fetch_object($rs)){
+while($rowVotes = mysqli_fetch_object($rs)){
     $arrVotes[] = $rowVotes->song_id;
 }
 if (empty($arrVotes)) {
     if (!empty($_POST)) {
         $arrVotes = array_keys(get_object_vars(json_decode($_POST['objVotes'])));
-        mysql_query('INSERT INTO show_songs (show_id, user_ip, song_id) VALUES (' . $showId . ", '" . $userIp . "', " . implode('), (' . $showId . ", '" . $userIp . "', ", $arrVotes) . ')');
+        mysqli_query($conn, 'INSERT INTO show_songs (show_id, user_ip, song_id) VALUES (' . $showId . ", '" . $userIp . "', " . implode('), (' . $showId . ", '" . $userIp . "', ", $arrVotes) . ')');
     }
 }
 ?>
@@ -140,11 +140,15 @@ if (!empty($row->address)) { ?>
                     <div class="block-heading-info">
 <?php if (empty($_POST) && empty($arrVotes)) { ?>                    
                         <p class="contador info">Vote agora nas suas músicas preferidas.</p>
-                        <p class="contador number">Restam <strong class="count-votes">12</strong> músicas.</p>
-                        <button type="submit" form="formVotes" value="submit" class="btn btn-primary btn-vote">Votar</button>
+                        <?php if ($row->is_countdown == 'N') { ?>
+                        <p class="contador number-votes">Você já escolheu <strong class="count-votes">0</strong> música<span class="info-s">s</span>.</p>
+                        <?php } else { ?>
+                        <p class="contador number-countdown">Restam <strong class="count-votes"><?php echo $row->start_countdown; ?></strong> músicas.</p>
+                        <?php } ?>
+                            <button type="submit" form="formVotes" value="submit" class="btn btn-primary btn-vote"<?php echo $row->is_countdown == 'S' ? ' style="margin-top:12px' : ''; ?>>Votar</button>
 <?php } else {
-    $rs = mysql_query("SELECT COUNT(*) votes FROM show_songs WHERE show_id = " . $showId);
-    $total = mysql_fetch_object($rs);
+    $rs = mysqli_query($conn, "SELECT COUNT(*) votes FROM show_songs WHERE show_id = " . $showId);
+    $total = mysqli_fetch_object($rs);
 ?>
                         <p style="margin: 0; padding-top: 39px">Total de votos até o momento: <strong class="count-votes"><?php echo $total->votes; ?></strong>.</p>
 <?php 
@@ -154,14 +158,14 @@ if (!empty($row->address)) { ?>
                 <div class="portfolio-wrapper clearfix" style="clear: both">
 <?php
 if (empty($_POST) && empty($arrVotes)) {
-    $rs = mysql_query("
+    $rs = mysqli_query($conn,"
         SELECT songs.id, songs.name song, authors.name author FROM songs
         INNER JOIN authors ON songs.author_id = authors.id
         WHERE songs.is_deleted = 'N'
         ORDER BY authors.name ASC, songs.name ASC
     ");
 
-    while($row = mysql_fetch_object($rs)){ ?>
+    while($row = mysqli_fetch_object($rs)){ ?>
                     <div class="each-portfolio">
                         <div class="hover-cont-wrap">
                             <div class="song">
@@ -181,7 +185,7 @@ if (empty($_POST) && empty($arrVotes)) {
                     <input type="hidden" id="objVotes" name="objVotes" />
                 </form>
 <?php } else {
-    $rs = mysql_query("
+    $rs = mysqli_query($conn,"
         SELECT show_songs.song_id, songs.name song, authors.name author, COUNT(*) votes FROM show_songs
         INNER JOIN songs ON show_songs.song_id = songs.id
         LEFT JOIN authors ON songs.author_id = authors.id
@@ -191,7 +195,7 @@ if (empty($_POST) && empty($arrVotes)) {
     ");
 
     $i = 0;
-    while ($row = mysql_fetch_object($rs)) { ?>
+    while ($row = mysqli_fetch_object($rs)) { ?>
                     <div class="each-portfolio">
                         <div class="hover-cont-wrap ranking<?php echo in_array($row->song_id, $arrVotes) ? ' selected' : ''; ?>">
                             <div class="song">
